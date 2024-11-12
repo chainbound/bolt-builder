@@ -374,12 +374,13 @@ func (b *Builder) subscribeToRelayForConstraints(relayBaseEndpoint string) error
 			log.Info(fmt.Sprintf("Received %d new constraints", len(constraintsSigned)))
 
 			for _, constraint := range constraintsSigned {
-				if !slices.Contains(b.slotConstraintsPubkeys, constraint.Message.Pubkey) {
-					log.Warn("Received constraint from unauthorized pubkey", "pubkey", constraint.Message.Pubkey)
-					continue
-				}
 
 				if b.verifyConstraints {
+					if !slices.Contains(b.slotConstraintsPubkeys, constraint.Message.Pubkey) {
+						log.Warn("Received constraint from unauthorized pubkey", "pubkey", constraint.Message.Pubkey)
+						continue
+					}
+
 					valid, err := constraint.VerifySignature(constraint.Message.Pubkey, b.GetConstraintsDomain())
 					if err != nil || !valid {
 						log.Error("Failed to verify constraint signature", "err", err)
