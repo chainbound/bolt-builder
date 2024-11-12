@@ -1525,16 +1525,16 @@ func (w *worker) fillTransactions(interrupt *atomic.Int32, env *environment, con
 
 	// Fill the block with all available pending transactions.
 	if len(localPlainTxs) > 0 || len(localBlobTxs) > 0 || len(constraints) > 0 {
-		plainTxs := newTransactionsByPriceAndNonce(env.signer, localPlainTxs, nil, nil, env.header.BaseFee)
-		blobTxs := newTransactionsByPriceAndNonce(env.signer, localBlobTxs, nil, nil, env.header.BaseFee)
+		plainTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
+		blobTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
 
 		if err := w.commitTransactions(env, plainTxs, blobTxs, constraints, interrupt); err != nil {
 			return nil, nil, nil, err
 		}
 	}
 	if len(remotePlainTxs) > 0 || len(remoteBlobTxs) > 0 || len(constraints) > 0 {
-		plainTxs := newTransactionsByPriceAndNonce(env.signer, remotePlainTxs, nil, nil, env.header.BaseFee)
-		blobTxs := newTransactionsByPriceAndNonce(env.signer, remoteBlobTxs, nil, nil, env.header.BaseFee)
+		plainTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
+		blobTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
 
 		if err := w.commitTransactions(env, plainTxs, blobTxs, constraints, interrupt); err != nil {
 			return nil, nil, nil, err
