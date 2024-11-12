@@ -290,20 +290,21 @@ func Register(stack *node.Node, backend *eth.Ethereum, cfg *Config) error {
 	}
 
 	builderArgs := BuilderArgs{
-		sk:                            builderSk,
-		blockConsumer:                 blockConsumer,
-		ds:                            ds,
-		dryRun:                        cfg.DryRun,
-		eth:                           ethereumService,
-		relay:                         relay,
-		builderSigningDomain:          builderSigningDomain,
-		builderBlockResubmitInterval:  builderRateLimitInterval,
-		submissionOffsetFromEndOfSlot: submissionOffset,
-		discardRevertibleTxOnErr:      cfg.DiscardRevertibleTxOnErr,
-		ignoreLatePayloadAttributes:   cfg.IgnoreLatePayloadAttributes,
-		validator:                     validator,
 		beaconClient:                  beaconClient,
+		blockConsumer:                 blockConsumer,
+		builderBlockResubmitInterval:  builderRateLimitInterval,
+		builderSigningDomain:          builderSigningDomain,
+		discardRevertibleTxOnErr:      cfg.DiscardRevertibleTxOnErr,
+		dryRun:                        cfg.DryRun,
+		ds:                            ds,
+		eth:                           ethereumService,
+		ignoreLatePayloadAttributes:   cfg.IgnoreLatePayloadAttributes,
 		limiter:                       limiter,
+		relay:                         relay,
+		sk:                            builderSk,
+		submissionOffsetFromEndOfSlot: submissionOffset,
+		validator:                     validator,
+		verifyConstraints:             cfg.VerifyConstraints,
 	}
 
 	builderBackend, err := NewBuilder(builderArgs)

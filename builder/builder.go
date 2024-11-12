@@ -341,17 +341,17 @@ func (b *Builder) subscribeToRelayForConstraints(relayBaseEndpoint string) error
 		for {
 			line, err := bufReader.ReadString('\n')
 			if err != nil {
-				// If we encounter an EOF or another serious error, break out to reconnect
-				isEOF := err == io.EOF || strings.Contains(err.Error(), "EOF")
-				if isEOF {
-					log.Error("Encountered EOF. Connection to relay lost, attempting to reconnect...", "relayBaseEndpoint", relayBaseEndpoint)
-					time.Sleep(retryInterval)
-					break // Break to reconnect by restarting the main `for` loop
-				}
-
-				// Log other errors but continue reading if recoverable
-				log.Error(fmt.Sprintf("Error reading from response body: %v", err))
-				continue
+				// It is better to break and trying to reconnect (by restarting
+				// the main loop), otherwise there is an high change we might run into
+				// an infinite loop because the error isn't recoverable.
+				log.Error(
+					fmt.Sprintf("Error reading from response body from relay %s: %v. Connection might be lost. Attempting to reconnect in %d seconds...",
+						relayBaseEndpoint,
+						err,
+						retryInterval,
+					))
+				time.Sleep(retryInterval)
+				break
 			}
 
 			if !strings.HasPrefix(line, "data: ") {
