@@ -371,7 +371,7 @@ func (b *Builder) subscribeToRelayForConstraints(relayBaseEndpoint string) error
 				continue
 			}
 
-			log.Info(fmt.Sprintf("Received %d new constraints", len(constraintsSigned)))
+			log.Info(fmt.Sprintf("Received %d new constraints from %s", len(constraintsSigned), relayBaseEndpoint))
 
 			for _, constraint := range constraintsSigned {
 
