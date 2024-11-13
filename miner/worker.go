@@ -1149,7 +1149,7 @@ func (w *worker) commitTransactions(env *environment, plainTxs, blobTxs *transac
 			// since by assumption it is not nonce-conflicting.
 			tx := lazyTx.Resolve()
 			if tx == nil {
-				log.Trace("Ignoring evicted transaction", "hash", candidate.tx.Hash())
+				log.Trace("Ignoring evicted transaction")
 				txs.Pop()
 				continue
 			}
