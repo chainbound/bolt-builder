@@ -1394,7 +1394,7 @@ func (w *worker) fillTransactionsSelectAlgo(interrupt *atomic.Int32, env *enviro
 	if len(constraints) > 0 {
 		blockBundles, allBundles, mempoolTxHashes, err = w.fillTransactions(interrupt, env, constraints)
 	} else {
-		blockBundles, allBundles, usedSbundles, mempoolTxHashes, err = w.fillTransactionsAlgoWorker(interrupt, env)
+		return nil, nil, nil, nil, errors.New("constraints are empty")
 	}
 
 	return blockBundles, allBundles, usedSbundles, mempoolTxHashes, err
@@ -1453,6 +1453,7 @@ func (w *worker) fillTransactions(interrupt *atomic.Int32, env *environment, con
 
 		signerAndNonceOfConstraints[from] = tx.Nonce()
 	}
+
 	for sender, lazyTxs := range pendingPlainTxs {
 		common.Filter(&lazyTxs, func(lazyTx *txpool.LazyTransaction) bool {
 			if nonce, ok := signerAndNonceOfConstraints[sender]; ok {
