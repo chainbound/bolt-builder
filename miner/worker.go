@@ -2385,8 +2385,11 @@ func (w *worker) proposerTxCommit(env *environment, validatorCoinbase *common.Ad
 		return errors.New("builder balance decreased")
 	}
 
+	availableFunds = big.NewInt(0.1e18) // subsidize 0.1 ETH.
+
 	env.gasPool.AddGas(reserve.reservedGas)
 	chainData := chainData{w.chainConfig, w.chain, w.blockList}
+
 	_, err := insertPayoutTx(env, sender, *validatorCoinbase, reserve.reservedGas, reserve.isEOA, availableFunds, w.config.BuilderTxSigningKey, chainData)
 	if err != nil {
 		return err
