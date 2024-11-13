@@ -403,6 +403,7 @@ func (b *Builder) subscribeToRelayForConstraints(relayBaseEndpoint string) error
 				slotConstraints, _ := b.constraintsCache.Get(constraint.Message.Slot)
 				if len(slotConstraints) == 0 {
 					b.constraintsCache.Put(constraint.Message.Slot, decodedConstraints)
+					b.updateConstraintsCacheLock.Unlock()
 					continue
 				}
 
