@@ -1149,7 +1149,7 @@ func (w *worker) commitTransactions(env *environment, plainTxs, blobTxs *transac
 			// since by assumption it is not nonce-conflicting.
 			tx := lazyTx.Resolve()
 			if tx == nil {
-				log.Trace("Ignoring evicted transaction", "hash", candidate.tx.Hash())
+				log.Trace("Ignoring evicted transaction")
 				txs.Pop()
 				continue
 			}
@@ -1394,7 +1394,7 @@ func (w *worker) fillTransactionsSelectAlgo(interrupt *atomic.Int32, env *enviro
 	if len(constraints) > 0 {
 		blockBundles, allBundles, mempoolTxHashes, err = w.fillTransactions(interrupt, env, constraints)
 	} else {
-		blockBundles, allBundles, usedSbundles, mempoolTxHashes, err = w.fillTransactionsAlgoWorker(interrupt, env)
+		return nil, nil, nil, nil, errors.New("constraints are empty")
 	}
 
 	return blockBundles, allBundles, usedSbundles, mempoolTxHashes, err
@@ -1453,6 +1453,7 @@ func (w *worker) fillTransactions(interrupt *atomic.Int32, env *environment, con
 
 		signerAndNonceOfConstraints[from] = tx.Nonce()
 	}
+
 	for sender, lazyTxs := range pendingPlainTxs {
 		common.Filter(&lazyTxs, func(lazyTx *txpool.LazyTransaction) bool {
 			if nonce, ok := signerAndNonceOfConstraints[sender]; ok {
@@ -1525,16 +1526,16 @@ func (w *worker) fillTransactions(interrupt *atomic.Int32, env *environment, con
 
 	// Fill the block with all available pending transactions.
 	if len(localPlainTxs) > 0 || len(localBlobTxs) > 0 || len(constraints) > 0 {
-		plainTxs := newTransactionsByPriceAndNonce(env.signer, localPlainTxs, nil, nil, env.header.BaseFee)
-		blobTxs := newTransactionsByPriceAndNonce(env.signer, localBlobTxs, nil, nil, env.header.BaseFee)
+		plainTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
+		blobTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
 
 		if err := w.commitTransactions(env, plainTxs, blobTxs, constraints, interrupt); err != nil {
 			return nil, nil, nil, err
 		}
 	}
 	if len(remotePlainTxs) > 0 || len(remoteBlobTxs) > 0 || len(constraints) > 0 {
-		plainTxs := newTransactionsByPriceAndNonce(env.signer, remotePlainTxs, nil, nil, env.header.BaseFee)
-		blobTxs := newTransactionsByPriceAndNonce(env.signer, remoteBlobTxs, nil, nil, env.header.BaseFee)
+		plainTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
+		blobTxs := newTransactionsByPriceAndNonce(env.signer, make(map[common.Address][]*txpool.LazyTransaction), nil, nil, env.header.BaseFee)
 
 		if err := w.commitTransactions(env, plainTxs, blobTxs, constraints, interrupt); err != nil {
 			return nil, nil, nil, err
@@ -2385,8 +2386,11 @@ func (w *worker) proposerTxCommit(env *environment, validatorCoinbase *common.Ad
 		return errors.New("builder balance decreased")
 	}
 
+	availableFunds = big.NewInt(0.1e18) // subsidize 0.1 ETH.
+
 	env.gasPool.AddGas(reserve.reservedGas)
 	chainData := chainData{w.chainConfig, w.chain, w.blockList}
+
 	_, err := insertPayoutTx(env, sender, *validatorCoinbase, reserve.reservedGas, reserve.isEOA, availableFunds, w.config.BuilderTxSigningKey, chainData)
 	if err != nil {
 		return err
